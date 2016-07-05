@@ -1,0 +1,23 @@
+{
+  "mongo": {
+    "comment": "Where's your database?",
+    "url": "mongodb://localhost:27017/fatebot"
+  },
+  "bot": {
+    "comment": "Set these from information on https://discordapp.com/developers/applications/me page for your application",
+    "token": "YOURBOTTOKENHERE",
+    "clientid": "YOURCLIENTIDHERE"
+  },
+  "dispatch": {
+    "comment": "What character determines a given message is a command to the bot",
+    "prefix": "!"
+  },
+  "diceroller": {
+    "comment": "default dice specification, used when no specification is given.",
+    "default": "4df"
+  },
+  "charsheet": {
+    "comment": "Fate Character sheet skill list formatting.  Fate Core, pyramid should be true, Fate Accelerated,probably false.",
+    "pyramid": true
+  }
+}
