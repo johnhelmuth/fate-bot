@@ -15,6 +15,7 @@ var dispatchlib = require('./libs/dispatch');
 var dispatch = dispatchlib.dispatch;
 var config = require('./libs/config');
 var bot_avatar = require('./libs/bot_avatar');
+var webApp = require('./webapp');
 
 var fatebot = new Discord.Client();
 
@@ -26,6 +27,7 @@ dispatchlib.config(config);
 Diceroller.config(config);
 Charsheet.config(config);
 bot_avatar.config(config);
+webApp.config(config);
 
 fatebot
 	.on("ready", function() {
@@ -37,6 +39,9 @@ fatebot
 		console.log('Use this URL to invite Fatebot to your server/channel: ',
 			"https://discordapp.com/oauth2/authorize?client_id=" + config('bot').client_id + "&scope=bot&permissions=0 FateBot"
 		);
+
+        console.log('Starting web app');
+        webApp.start(fatebot);
 	})
 	.on("message", function (message) {
 		if (dispatch(fatebot, message)) {
