@@ -52,10 +52,18 @@ module.exports = {
 		"func": list_aspects,
 		"describe": "Lists all character aspects"
 	},
+    "skills": {
+        "func": skill_list,
+        "describe": "Lists peak skills of all characters on the server, or all the characters ratings in a given skill"
+    },
 	"random": {
 		"func": random_aspect,
 		"describe": "Picks a random aspect from all the characters on the server."
 	},
+    "list_all": {
+        "func": list_all,
+        "describe": "Lists all characters on the server"
+    },
 	"dump": {
 		"func": dump,
 		"describe": "Dumps the character sheet in JSON format"
@@ -63,10 +71,6 @@ module.exports = {
 	"load": {
 		"func": load,
 		"describe": "Loads the character sheet from the message (in JSON format) into the database"
-	},
-	"list_all": {
-		"func": list_all,
-		"describe": "Lists all characters on the server"
 	},
 	"load_other": {
 		"func": load_other,
@@ -415,6 +419,94 @@ function list_aspects(bot, msg, parsed) {
 		.catch(function (err) {
 			replyWithErr(bot, msg, err);
 		});
+}
+
+/**
+ * Show a list of characters skills, either peak skills
+ * or a specific skill from all characters
+ *
+ * @param {Client} bot
+ * @param {Message} msg
+ * @param {Object} parsed
+ */
+function skill_list(bot, msg, parsed) {
+    var server_id = getServerId(msg);
+    var which_skill;
+    if (parsed.tokens.length >= 1) {
+        which_skill = parsed.tokens.shift();
+    }
+    return Charsheet.loadBy({
+            'server_id': server_id
+        })
+        .then(function (chars) {
+            var output;
+            if (which_skill) {
+                output = "\nCharacter\t:\t**" + Charsheet.displayAttribute(which_skill) + "** Rank\n";
+            } else {
+                output = "\nCharacter\t:\tSkill\t:\tRank\n";
+            }
+            sortCharsSkills(chars, which_skill)
+                .forEach(function (skill) {
+                output += skill.name + "\t:\t";
+                if (!which_skill) {
+                    output += "**" + Charsheet.displayAttribute(skill.skill) + "**\t:\t";
+                }
+                output += "***" + Charsheet.displayRating(skill.rating) + "***\n";
+            });
+            bot.reply(msg, output);
+        })
+        .catch(function (err) {
+            replyWithErr(bot, msg, err);
+        });
+}
+
+/**
+ * Sort a list of characters' skills by rating
+ *
+ * @param {Charsheet[]} chars
+ * @param {string|null} which_skill
+ * @returns {Object[]}
+ */
+function sortCharsSkills(chars, which_skill) {
+    return chars.map(function (char) {
+        var skill_name;
+        var skill_value;
+        if (!which_skill) {
+            skill_name = getPeakSkill(char.skills).skill;
+        } else {
+            skill_name = which_skill.toLowerCase();
+        }
+        if (char.skills.hasOwnProperty(skill_name)) {
+            skill_value = char.skills[skill_name];
+        } else {
+            skill_value = 0;
+        }
+        return {
+            name: char.name,
+            skill: skill_name,
+            rating: skill_value
+        };
+    }).sort(function (a, b) {
+        return b.rating - a.rating;
+    });
+}
+
+/**
+ * Get the highest ranked skill in a list of skills
+ *
+ * @param {Object} skills - keys are skill names, values are ratings
+ *
+ * @returns {Object}
+ */
+function getPeakSkill(skills) {
+    return _.reduce(skills, function (curr, rank, skill) {
+        console.log('getPeakSkill() reduce iterator.  curr, rank, skill: ', curr, rank, skill);
+        if (rank > curr.rank) {
+            curr.skill = skill.toLowerCase();
+            curr.rank = rank;
+        }
+        return curr;
+    }, {skill: '', rank: -99});
 }
 
 /**

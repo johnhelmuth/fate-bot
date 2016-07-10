@@ -325,6 +325,7 @@ var toStringFunctions = {
 function displayAttribute(attribute_name) {
 	return attribute_name.split('_').map(_.capitalize).join(' ');
 }
+Charsheet.displayAttribute = displayAttribute;
 
 /**
  * Format a rating (a numerical property value) Using the Fate Ladder
@@ -344,6 +345,7 @@ function displayRating(rating) {
 	}
 	return prefix + rating + suffix;
 }
+Charsheet.displayRating = displayRating;
 
 /**
  * Save the character sheet

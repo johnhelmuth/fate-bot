@@ -1,1 +1,14 @@
-{}
+{
+  "dispatch": {
+    "prefix": "!"
+  },
+  "diceroller": {
+    "default": "4df"
+  },
+  "charsheet": {
+    "pyramid": true
+  },
+  "dice_images": {
+    "path": "images/dice/4df"
+  }
+}

@@ -6,13 +6,15 @@
  *
  */
 
+var path = require('path');
+
 var Discord = require("discord.js");
 var Diceroller = require('./libs/diceroller');
 var Charsheet = require('./libs/charsheet');
 var dispatchlib = require('./libs/dispatch');
 var dispatch = dispatchlib.dispatch;
-
 var config = require('./libs/config');
+var bot_avatar = require('./libs/bot_avatar');
 
 var fatebot = new Discord.Client();
 
@@ -23,6 +25,7 @@ var discordToken = config('bot').token;
 dispatchlib.config(config);
 Diceroller.config(config);
 Charsheet.config(config);
+bot_avatar.config(config);
 
 fatebot
 	.on("ready", function() {
@@ -32,7 +35,7 @@ fatebot
 		// src/config/*.json bot.clientid should be configured from https://discordapp.com/developers/applications/me My Applications - Fatebot application
 		// "Client/Application ID:" value
 		console.log('Use this URL to invite Fatebot to your server/channel: ',
-			"https://discordapp.com/oauth2/authorize?client_id=" + config('bot').clientid + "&scope=bot&permissions=0 FateBot"
+			"https://discordapp.com/oauth2/authorize?client_id=" + config('bot').client_id + "&scope=bot&permissions=0 FateBot"
 		);
 	})
 	.on("message", function (message) {

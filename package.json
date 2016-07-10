@@ -2,6 +2,9 @@
   "name": "fate-bot",
   "version": "0.0.1",
   "description": "A Discord bot to help with playing Fate roll dice",
+  "engines": {
+    "node": "6.3.0"
+  },
   "main": "src/index.js",
   "scripts": {
     "test": "mocha",
@@ -19,6 +22,7 @@
   "dependencies": {
     "bluebird": "^3.4.1",
     "chance": "^1.0.3",
+    "datauri": "^1.0.4",
     "discord.js": "^8.0.0",
     "jsonfile": "^2.3.1",
     "lodash": "^4.13.1",
