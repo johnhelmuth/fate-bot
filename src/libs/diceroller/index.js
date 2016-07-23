@@ -5,8 +5,9 @@
  */
 
 var Chance = require('chance');
-var fate_ladder = require('./fate_ladder');
+var fate_ladder = require('../fate_ladder');
 var chance = new Chance();
+var DiceFormatter = require('./formatter');
 
 var default_spec = '2d6';
 var default_parsed = {
@@ -116,13 +117,6 @@ function roll_a_die(die_type) {
 	return chance.integer(range)
 }
 
-function lookup(lookup_list, offset, value) {
-	value += offset;
-	if (value < 0) value = 0;
-	if (value >= lookup_list.length) value = lookup_list.length-1;
-	return lookup_list[value];
-}
-
 Diceroller.prototype = {
 	roll: function roll() {
 		var dicerolls = [];
@@ -137,76 +131,18 @@ Diceroller.prototype = {
 		return this;
 	},
 	rollsToString: function rollsToString() {
-		var str = '';
-		if (this.parsed.die_type == 'f') {
-			str = describeFudgeDiceList(this.rolls);
-		} else {
-			str = describeDiceList(this.rolls);
-		}
-		return str;
+		return DiceFormatter.formatRolls(this);
 	},
 	sumToString: function sumToString() {
-		var str = '';
-		if (this.parsed.die_type == 'f') {
-			str = describeFudgeSum(this.sum);
-		} else {
-			str = describeDiceSum(this.sum);
-		}
-		return str;
+		return DiceFormatter.formatSum(this);
 	},
 	bonusToString: function bonusToString() {
-		return describeBonus(this.parsed.bonus);
+		return DiceFormatter.formatBonus(this.parsed.bonus);
 	},
 	toString: function toString() {
-		var str = '';
-		if (this.parsed.die_type == 'f') {
-			str = formatFudge(this.rolls, this.sum, this.parsed.bonus, this.parsed.description || '');
-		} else {
-			str = formatDice(this.rolls, this.sum, this.parsed.bonus, this.parsed.description);
-		}
-		return str;
+		return DiceFormatter.format(this);
 	}
 };
-
-function describeDiceList(rolls) {
-	return rolls.join(', ');
-}
-
-function describeDiceSum(sum) {
-	return sum;
-}
-
-function formatDice(rolls, sum, bonus, description) {
-	return describeDiceList(rolls) + ' ' + describeBonus(bonus) + ' = *' + (describeDiceSum(sum) + description).trim() + '*';
-}
-
-function describeFudgeSum(sum) {
-	if (fate_ladder.hasOwnProperty(sum)) {
-		console.log('formatFudge() sum: ', sum);
-		sum = fate_ladder[sum] + ' (' + (sum < 0 ? '' : '+') + sum + ')'
-	}
-	return sum;
-}
-
-function describeFudgeDiceList(rolls) {
-	return rolls.map(describeAFudgeDice).join(' ');
-}
-
-function describeAFudgeDice(val) {
-	return lookup(["[-]", "[ ]", "[+]"], 1, val);
-}
-
-//  rolled [-] [ ] [-] [+]  @+3 = Fair (+2)
-function formatFudge(rolls, sum, bonus, description) {
-	return describeFudgeDiceList(rolls) + ' ' + describeBonus(bonus) + ' = *' + (describeFudgeSum(sum) + description).trim() + '*';
-}
-
-function describeBonus(bonus) {
-	if (bonus) {
-		return (bonus < 0 ? '-' : '+') + Math.abs(bonus);
-	}
-	return '';
-}
 
 Diceroller.setDefaultDice = function(new_spec) {
 	var new_parsed;

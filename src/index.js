@@ -15,7 +15,8 @@ var dispatchlib = require('./libs/dispatch');
 var dispatch = dispatchlib.dispatch;
 var config = require('./libs/config');
 var bot_avatar = require('./libs/bot_avatar');
-var webApp = require('./webapp');
+var startWebApp = require('./webapp/app');
+var webApp;
 
 var fatebot = new Discord.Client();
 
@@ -27,7 +28,6 @@ dispatchlib.config(config);
 Diceroller.config(config);
 Charsheet.config(config);
 bot_avatar.config(config);
-webApp.config(config);
 
 fatebot
 	.on("ready", function() {
@@ -40,8 +40,8 @@ fatebot
 			"https://discordapp.com/oauth2/authorize?client_id=" + config('bot').client_id + "&scope=bot&permissions=0 FateBot"
 		);
 
-        console.log('Starting web app');
-        webApp.start(fatebot);
+        console.log('Telling web app about fatebot');
+        webApp = startWebApp(config, fatebot);
 	})
 	.on("message", function (message) {
 		if (dispatch(fatebot, message)) {
@@ -49,6 +49,7 @@ fatebot
 		}
 	})
 	.on("disconnected", function () {
-		console.log("Fatebot disconnected event.");
+		console.log("Fatebot Disconnected!.");
+        process.exit(1); //exit node.js with an error
 	})
 	.loginWithToken(discordToken);

@@ -156,6 +156,8 @@ function char_cmd(bot, msg, parsed) {
 			if (parsed.tokens.length) {
 				var attribute = parsed.tokens.shift();
 				var default_val = Charsheet.getDefaultAttr(attribute);
+                console.log('char set attribute: ', attribute);
+                console.log('char set default_val: ', default_val);
 				if (_.isString(default_val) || _.isInteger(default_val)) {
 					char
 						.then(function (char) {
@@ -168,13 +170,20 @@ function char_cmd(bot, msg, parsed) {
 						.catch(function (err) {
 							replyWithErr(bot, msg, err);
 						});
-				} else if (_.isObject(default_val)) {
+				} else if (Charsheet.isMultiple(attribute)) {
+				    console.log(attribute + ' is an aggregate attribute');
 					if (parsed.rest_of_message().length) {
 						name = parsed.tokens.shift();
+                        console.log('char set name: ', name);
 						char
 							.then(function (char) {
-								if (char.hasOwnProperty(name) && _.isFunction(char[name])) {
-									char[name](name, parsed.rest_of_message().trim());
+                                console.log('char set got char');
+                                console.log('char set attribute: ', attribute);
+                                console.log('char set char.hasOwnProperty(attribute): ', char.hasOwnProperty(attribute));
+                                console.log('char set _.isFunction(char[attribute]): ', _.isFunction(char[attribute]));
+                                if (_.isFunction(char[attribute])) {
+                                    console.log('char set trying to call ', attribute, ' with ', name, parsed.rest_of_message().trim());
+                                    char[attribute](name, parsed.rest_of_message().trim());
 									return char.save();
 								}
 							})
@@ -187,7 +196,9 @@ function char_cmd(bot, msg, parsed) {
 					} else {
 						replyWithErr(bot, msg, 'No aspect specified.');
 					}
-				}
+				} else {
+                    replyWithErr(bot, msg, "I don't know what that field is.");
+                }
 			} else {
 				replyWithErr(bot, msg, 'No field specified.');
 			}

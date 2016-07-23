@@ -31,6 +31,8 @@ var empty_data = {
 	consequences: {}
 };
 
+var cant_set = ['player_id', 'server_id'];
+
 /**
  * Display the character sheet in a skill pyramid, or an alphabetic list of skills?
  *
@@ -160,9 +162,12 @@ Charsheet.prototype = {
 	 */
 	set: function(which, value) {
 		which = which.toLowerCase();
-		if (this.hasOwnProperty(which)) {
-			this[which] = value;
+		if (!this.hasOwnProperty(which)
+            || (cant_set.indexOf(which) != -1)
+        ) {
+		    return null;
 		}
+        this[which] = value;
 		return this[which];
 	},
 

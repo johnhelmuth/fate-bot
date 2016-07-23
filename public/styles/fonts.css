@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'Fate Core Font';
+  src: url('/fonts/Fate Core Font.eot');
+  src: local('☺'), url('/fonts/Fate Core Font.woff') format('woff'),
+  		url('/fonts/Fate Core Font.ttf') format('truetype'),
+  		url('/fonts/Fate Core Font.svg') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}

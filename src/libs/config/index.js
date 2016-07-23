@@ -91,6 +91,9 @@ function validateDiscord(cfg) {
     if (process.env.hasOwnProperty('DISCORD_CLIENT_ID') && process.env.DISCORD_CLIENT_ID) {
         (cfg.bot || (cfg.bot = {})).client_id = process.env.DISCORD_CLIENT_ID;
     }
+    if (process.env.hasOwnProperty('DISCORD_CLIENT_SECRET') && process.env.DISCORD_CLIENT_SECRET) {
+        (cfg.bot || (cfg.bot = {})).client_secret = process.env.DISCORD_CLIENT_SECRET;
+    }
     if (process.env.hasOwnProperty('DISCORD_BOT_TOKEN') && process.env.DISCORD_BOT_TOKEN) {
         (cfg.bot || (cfg.bot = {})).token = process.env.DISCORD_BOT_TOKEN;
     }
@@ -100,6 +103,9 @@ function validateDiscord(cfg) {
     console.log('cfg: ', cfg);
     if (!cfg.bot.hasOwnProperty('client_id')) {
         throw new Error("No bot client ID configured.");
+    }
+    if (!cfg.bot.hasOwnProperty('client_secret')) {
+        throw new Error("No bot client secret configured.");
     }
     if (!cfg.bot.hasOwnProperty('token')) {
         throw new Error("No bot token configured.");
