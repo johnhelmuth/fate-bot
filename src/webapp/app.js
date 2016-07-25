@@ -8,8 +8,9 @@ const port = (process.env.PORT || 8080);
 function startApp(app_config, fatebot) {
 
     var webPackHook = function(app) {};
-
+    console.log('startApp() process.env.NODE_ENV: ', process.env.NODE_ENV);
     if (process.env.NODE_ENV !== 'production') {
+        console.log('startApp() setting up webPackHook()');
         webPackHook = function(app) {
             const webpack = require('webpack');
             const webpackDevMiddleware = require('webpack-dev-middleware');

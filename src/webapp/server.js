@@ -10,6 +10,7 @@ const passport = require('passport');
 const auth = require('./auth');
 const MongoStore = require('connect-mongo')(session);
 const compression = require('compression');
+const morgan = require('morgan');
 
 module.exports = {
     app: function (config, webpackHook, fatebot) {
@@ -21,12 +22,19 @@ module.exports = {
 
         webpackHook(app);
 
+        app.use(morgan('combined'));
+
         app.use(session({
             secret: 'lajsdfla doina vhasduf ',
             store: new MongoStore({url: config('mongo').url}),
             resave: false,
             saveUninitialized: false
         }));
+
+        app.use(function(req, res, done) {
+            console.log('req.session: ', req.session);
+            done();
+        });
 
         app.use('/', express.static(path.join(__dirname, '../../public'), {index: false}));
 
