@@ -73,6 +73,7 @@ function loadConfig(filename, cfg) {
 function validateConfig(cfg) {
     cfg = validateMongo(cfg);
     cfg = validateDiscord(cfg);
+    cfg = validateApp(cfg);
     return cfg;
 }
 
@@ -83,6 +84,17 @@ function validateMongo(cfg) {
     if (! cfg.hasOwnProperty('mongo') || ! cfg.mongo.hasOwnProperty('url')) {
         console.log('overwriteMongo() cfg, env: ', cfg, process.env);
         throw new Error("No mongodb url configured.");
+    }
+    return cfg;
+}
+
+function validateApp(cfg) {
+    if (process.env.hasOwnProperty('APP_DOMAIN') && process.env.APP_DOMAIN) {
+        cfg.app_domain = process.env.APP_DOMAIN;
+    }
+    if (!cfg.hasOwnProperty('app_domain')) {
+        console.log('validateApp() cfg, env: ', cfg, process.env);
+        throw new Error("No app_domain name configured.");
     }
     return cfg;
 }
