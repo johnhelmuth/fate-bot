@@ -2,48 +2,30 @@
  * Created by jhelmuth on 7/10/16.
  */
 
-const path = require('path');
-const express = require('express');
-const routes = require('./routes');
-const session = require('express-session');
-const passport = require('passport');
-const auth = require('./auth');
-const MongoStore = require('connect-mongo')(session);
-const compression = require('compression');
-const morgan = require('morgan');
+const App = require('./app.js');
+const config = require('../libs/config');
+const port = (process.env.PORT || 8080);
 
-module.exports = {
-    app: function (config, webpackHook, fatebot) {
-        const app = express();
+var webPackHook = function(app) {};
 
-        app.locals.fatebot = fatebot;
-
-        app.use(compression());
-
-        webpackHook(app);
-
-        app.use(morgan('combined'));
-
-        app.use(session({
-            secret: 'lajsdfla doina vhasduf ',
-            store: new MongoStore({url: config('mongo').url}),
-            resave: false,
-            saveUninitialized: false
+console.log('server.js process.env.NODE_ENV: ', process.env.NODE_ENV);
+if (process.env.NODE_ENV !== 'production') {
+    console.log('server.js setting up webPackHook()');
+    webPackHook = function(app) {
+        const webpack = require('webpack');
+        const webpackDevMiddleware = require('webpack-dev-middleware');
+        const webpackHotMiddleware = require('webpack-hot-middleware');
+        const wp_config = require('../../webpack.dev.config.js');
+        const compiler = webpack(wp_config);
+        console.log('loading webpack hot middleware and dev middleware');
+        app.use(webpackHotMiddleware(compiler));
+        app.use(webpackDevMiddleware(compiler, {
+            noInfo: true,
+            publicPath: wp_config.output.publicPath
         }));
+    };
+}
 
-        app.use(function(req, res, done) {
-            console.log('req.session: ', req.session);
-            done();
-        });
-
-        app.use('/', express.static(path.join(__dirname, '../../public'), {index: false}));
-
-        auth.initialize(app, config);
-
-        var checkAuth = auth.checkAuth.bind(auth, fatebot);
-
-        routes(app, checkAuth);
-
-        return app;
-    }
-};
+const app = App(config, webPackHook);
+app.listen(port);
+console.log(`Listening at http://localhost:${port}`);

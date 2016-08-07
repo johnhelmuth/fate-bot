@@ -2,36 +2,45 @@
  * Created by jhelmuth on 7/10/16.
  */
 
-const Server = require('./server.js');
-const port = (process.env.PORT || 8080);
+const path = require('path');
+const express = require('express');
+const routes = require('./routes');
+const session = require('express-session');
+const passport = require('passport');
+const auth = require('./auth');
+const MongoStore = require('connect-mongo')(session);
+const compression = require('compression');
+const morgan = require('morgan');
 
-function startApp(app_config, fatebot) {
+module.exports = function (config, webpackHook) {
+    const app = express();
 
-    var webPackHook = function(app) {};
-    console.log('startApp() process.env.NODE_ENV: ', process.env.NODE_ENV);
-    if (process.env.NODE_ENV !== 'production') {
-        console.log('startApp() setting up webPackHook()');
-        webPackHook = function(app) {
-            const webpack = require('webpack');
-            const webpackDevMiddleware = require('webpack-dev-middleware');
-            const webpackHotMiddleware = require('webpack-hot-middleware');
-            const config = require('../../webpack.dev.config.js');
-            const compiler = webpack(config);
-            console.log('loading webpack hot middleware and dev middleware');
-            app.use(webpackHotMiddleware(compiler));
-            app.use(webpackDevMiddleware(compiler, {
-                noInfo: true,
-                publicPath: config.output.publicPath
-            }));
-        };
-    }
-    console.log('NODE_ENV: ', process.env.NODE_ENV);
+    app.use(compression());
 
-    const app = Server.app(app_config, webPackHook, fatebot);
-    app.listen(port);
-    console.log(`Listening at http://localhost:${port}`);
+    webpackHook(app);
+
+    app.use(morgan('combined'));
+
+    app.use(session({
+        secret: 'lajsdfla doina vhasduf ',
+        store: new MongoStore({url: config('mongo').url}),
+        resave: false,
+        saveUninitialized: false
+    }));
+
+    app.use(function(req, res, done) {
+        console.log('req.session: ', req.session);
+        done();
+    });
+
+    // handle static files, js, images, etc.
+    app.use('/', express.static(path.join(__dirname, '../../public'), {index: false}));
+
+    // initialize authentication system, including login and auth callback routes
+    auth.initialize(app, config);
+
+    // handle all other application routes
+    routes(app);
+
     return app;
-}
-
-module.exports = startApp;
-
+};

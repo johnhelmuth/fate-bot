@@ -3,25 +3,19 @@
  */
 
 var auth = require("../auth");
-var _ = require('lodash');
-var Promise = require('bluebird');
-var Charsheet = require('../../libs/charsheet');
-var express = require('express');
 var path = require('path');
-var Diceroller = require('../../libs/diceroller');
 var api_routes = require('./api');
 
-function fatebot(req) {
-    if (req.app.locals.fatebot) {
-        return req.app.locals.fatebot;
-    }
-    return null;
-}
-
-module.exports = function(app, checkAuth) {
+module.exports = function(app) {
     const indexPath = path.join(__dirname, '../../../public/index.html');
-    api_routes(app, fatebot);
-    app.get('*', checkAuth,
+
+    // handle /api/* routes
+    api_routes(app);
+
+    // handle all other routes of the webapp by having ReactRouter handle them
+    // this is the final, fallback handler for those "virtual" routes,
+    // like /server/ etc.
+    app.get('*', auth.checkAuth.bind(auth),
         function (req, res) {
             console.log('/ serving index.html');// dump the user for debugging
             if (req.isAuthenticated()) {

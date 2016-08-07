@@ -74,6 +74,7 @@ function validateConfig(cfg) {
     cfg = validateMongo(cfg);
     cfg = validateDiscord(cfg);
     cfg = validateApp(cfg);
+    cfg = validateAMQP(cfg);
     return cfg;
 }
 
@@ -123,5 +124,12 @@ function validateDiscord(cfg) {
         throw new Error("No bot token configured.");
     }
     console.log('validateDiscord() final cfg: ', cfg);
+    return cfg;
+}
+
+function validateAMQP(cfg) {
+    if (process.env.hasOwnProperty('CLOUDAMQP_URL') && process.env.CLOUDAMQP_URL) {
+        (cfg.amqp || (cfg.amqp = {})).url = process.env.CLOUDAMQP_URL;
+    }
     return cfg;
 }

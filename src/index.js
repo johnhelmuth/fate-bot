@@ -15,13 +15,14 @@ var dispatchlib = require('./libs/dispatch');
 var dispatch = dispatchlib.dispatch;
 var config = require('./libs/config');
 var bot_avatar = require('./libs/bot_avatar');
-var startWebApp = require('./webapp/app');
-var webApp;
+var bot_worker = require('./libs/bot_worker');
 
 var fatebot = new Discord.Client();
 
 // https://discordapp.com/developers/applications/me My Applications - Fatebot application
 // src/config/*.json bot.token should be APP BOT USER / Token: value
+// or use environment variables DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, and DISCORD_BOT_TOKEN
+
 var discordToken = config('bot').token;
 
 dispatchlib.config(config);
@@ -36,12 +37,13 @@ fatebot
 
 		// src/config/*.json bot.clientid should be configured from https://discordapp.com/developers/applications/me My Applications - Fatebot application
 		// "Client/Application ID:" value
+        // or use environment variable DISCORD_CLIENT_ID
 		console.log('Use this URL to invite Fatebot to your server/channel: ',
 			"https://discordapp.com/oauth2/authorize?client_id=" + config('bot').client_id + "&scope=bot&permissions=0 FateBot"
 		);
 
-        console.log('Telling web app about fatebot');
-        webApp = startWebApp(config, fatebot);
+        console.log('Starting bot_worker.');
+        bot_worker(fatebot);
 	})
 	.on("message", function (message) {
 		if (dispatch(fatebot, message)) {

@@ -13,6 +13,7 @@
   "author": "John Helmuth <john@helmuth.org>",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.4.2",
     "axios": "^0.13.1",
     "bluebird": "^3.4.1",
     "chance": "^1.0.3",
@@ -27,6 +28,7 @@
     "lodash": "^4.13.1",
     "mongodb": "^2.1.18",
     "morgan": "^1.7.0",
+    "node-uuid": "^1.4.7",
     "passport": "^0.3.2",
     "passport-discord": "^0.1.1",
     "react": "^15.2.1",
@@ -57,6 +59,7 @@
   "scripts": {
     "test": "mocha",
     "build": "webpack --display-error-details --config ./webpack.prod.config.js --progress --colors",
-    "start": "node ./src/index.js"
+    "start": "node ./src/webapp/server.js",
+    "start:bot": "node ./src/index.js"
   }
 }

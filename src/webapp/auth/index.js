@@ -4,6 +4,8 @@
 
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
+const bi = require('../bot_interface');
+
 const scopes = [
     'identify',
     //'email',
@@ -64,20 +66,28 @@ Auth.prototype.initialize = function setupAuth(app, config) {
     app.get('/unauthorized', function(req, res) {
         console.log('/unauthorized called.');
         res.status(403).send("You are unauthorized to use this site.");
-    })
+    });
 };
 
 Auth.prototype.checkAuth = checkAuth;
-function checkAuth(fatebot, req, res, done) {
+function checkAuth(req, res, done) {
     console.log('checkAuth() ' + req.path + ' checking authentication. req.isAuthenticated(): ', req.isAuthenticated());
     if (!req.isAuthenticated()) {
         return res.redirect('/login');
     }
     console.log('checkAuth() checking if user is known to bot client. req.user.id: ', req.user.id);
-    if (! fatebot.users.has('id', req.user.id)) {
-        return res.redirect('/unauthorized');
-    }
-    done();
+    bi.hasUser(req.user.id)
+        .then(function (has_user) {
+            console.log('checkAuth() has_user: ', has_user);
+            if (has_user) {
+                return done();
+            }
+            return res.redirect('/unauthorized');
+        })
+        .catch(function (err) {
+            console.log('checkAuth() err: ', err);
+            return res.redirect('/unauthorized');
+        });
 }
 
 module.exports = new Auth();
