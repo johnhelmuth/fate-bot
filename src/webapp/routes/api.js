@@ -13,47 +13,47 @@ var Charsheet = require('../../libs/charsheet');
 module.exports = function (app) {
     var router = express.Router();
     router.use(checkAPIAuth);
-    router.get('/servers',
+    router.get('/guilds',
         function (req, res) {
-            console.log('/servers called. req.user: ', req.user);
-            bi.getServers()
-                .then(function (servers) {
-                    console.log('/servers servers: ', servers);
-                    servers =
-                        _.intersectionBy(servers, req.user.guilds, ((server) => server.id))
-                            .map((server) => {
-                                return {id: server.id, icon: server.icon, name: server.name};
+            console.log('/guilds called. req.user: ', req.user);
+            bi.getGuilds()
+                .then(function (guilds) {
+                    console.log('/guilds guilds: ', guilds);
+                    guilds =
+                        _.intersectionBy(guilds, req.user.guilds, ((guild) => guild.id))
+                            .map((guild) => {
+                                return {id: guild.id, icon: guild.icon, name: guild.name};
                             });
-                    Promise.all(servers.map((server) => {
-                            return Charsheet.loadBy({server_id: server.id})
+                    Promise.all(guilds.map((guild) => {
+                            return Charsheet.loadBy({guild_id: guild.id})
                                 .then(function (charsheets) {
-                                    server.characters = charsheets;
-                                    return server;
+                                    guild.characters = charsheets;
+                                    return guild;
                                 });
                         })
-                    ).then(function (servers) {
-                        console.log('returning servers: ', servers);
-                        res.json({servers: servers});
+                    ).then(function (guilds) {
+                        console.log('returning guilds: ', guilds);
+                        res.json({guilds: guilds});
                     });
                 })
                 .catch(function (err) {
-                    console.error('Error asking fatebot for servers: ', err);
-                    res.json({servers: []});
+                    console.error('Error asking fatebot for guilds: ', err);
+                    res.json({guilds: []});
                 });
         });
 
-    router.get('/server/:server_id',
-        checkUserHasServer,
+    router.get('/guild/:guild_id',
+        checkUserHasGuild,
         function (req, res) {
-            console.log('/api/servers/:server_id/characters called. server_id: ', req.params.server_id);
-            bi.getServer(req.params.server_id)
-                .then(function (server) {
-                    Charsheet.loadBy({server_id: req.params.server_id})
+            console.log('/api/guilds/:guild_id/characters called. guild_id: ', req.params.guild_id);
+            bi.getGuild(req.params.guild_id)
+                .then(function (guild) {
+                    Charsheet.loadBy({guild_id: req.params.guild_id})
                         .then(function (charsheets) {
                             res.json({
-                                id: server.id,
-                                icon: server.icon,
-                                name: server.name,
+                                id: guild.id,
+                                icon: guild.icon,
+                                name: guild.name,
                                 characters: charsheets
                             });
                         })
@@ -62,23 +62,23 @@ module.exports = function (app) {
                         });
                 })
                 .catch(function (err) {
-                    console.error('Error asking fatebot for servers: ', err);
+                    console.error('Error asking fatebot for guilds: ', err);
                     res.status(404).json({message: "Not found."});
                 });
         }
     );
 
-    router.get('/server/:server_id/character/:player_id',
-        checkUserHasServer,
+    router.get('/guild/:guild_id/character/:player_id',
+        checkUserHasGuild,
         function (req, res) {
-            console.log('/api/servers/:server_id/characters called. server_id: ', req.params.server_id);
-            bi.getServer(req.params.server_id)
-                .then(function (server) {
-                    Charsheet.loadBy({server_id: req.params.server_id, player_id: req.params.player_id})
+            console.log('/api/guilds/:guild_id/characters called. guild_id: ', req.params.guild_id);
+            bi.getGuild(req.params.guild_id)
+                .then(function (guild) {
+                    Charsheet.loadBy({guild_id: req.params.guild_id, player_id: req.params.player_id})
                         .then(function (charsheets) {
                             var charsheet = charsheets[0];
-                            charsheet.server_name = server.name;
-                            charsheet.server_icon = server.icon;
+                            charsheet.guild_name = guild.name;
+                            charsheet.guild_icon = guild.icon;
                             charsheet.is_owner = userOwnsCharacter(req.user, charsheet.player_id);
                             res.json(charsheet);
                         })
@@ -87,18 +87,18 @@ module.exports = function (app) {
                         });
                 })
                 .catch(function (err) {
-                    console.error('Error asking fatebot for servers: ', err);
+                    console.error('Error asking fatebot for guilds: ', err);
                     res.status(404).json({message: "Not found."});
                 });
         }
     );
 
-    router.get('/server/:server_id/character/:player_id/:skill/roll/:description?',
-        checkUserHasServer,
+    router.get('/guild/:guild_id/character/:player_id/:skill/roll/:description?',
+        checkUserHasGuild,
         checkUserOwnsCharacter,
         function (req, res) {
-            console.log('/servers/:server_id/character/:player_id/:skill/roll called. req.params: ', req.params);
-            bi.rollSkill(req.params.server_id, req.params.player_id, req.params.skill, req.params.description)
+            console.log('/guilds/:guild_id/character/:player_id/:skill/roll called. req.params: ', req.params);
+            bi.rollSkill(req.params.guild_id, req.params.player_id, req.params.skill, req.params.description)
                 .then(function(result) {
                     console.log('callback from bi.rollSkill() result: ', result);
                     res.json(result);
@@ -122,18 +122,18 @@ function checkAPIAuth(req, res, next) {
     res.status(403).json({message: "Forbidden."});
 }
 
-function checkUserHasServer(req, res, next) {
-    if (req.params.server_id
+function checkUserHasGuild(req, res, next) {
+    if (req.params.guild_id
         && req.user.guilds.length > 0
     ) {
         console.log('req.user.guilds: ', req.user.guilds);
-        var server =
+        var guild =
             _.find(req.user.guilds,
                 (guild) => {
-                    return guild.id == req.params.server_id
+                    return guild.id == req.params.guild_id
                 }
             );
-        if (server) {
+        if (guild) {
             return next();
         }
     }

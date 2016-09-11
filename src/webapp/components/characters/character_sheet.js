@@ -66,7 +66,7 @@ export default React.createClass({
             <ul>
                 <li><label>Character</label> <span className="value">{character.name}</span></li>
                 <li><label>Player</label> <span className="value">{character.player}</span></li>
-                <li><label>Server</label> <span className="value">{character.server_name}</span></li>
+                <li><label>Guild</label> <span className="value">{character.guild_name}</span></li>
                 <li><label>Fate Points</label> <span className="value">{character.fate_points}</span></li>
                 <li><label>Refresh</label> <span className="value">{character.refresh}</span></li>
                 <li><label>Aspects</label>

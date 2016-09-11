@@ -16,7 +16,7 @@ export default React.createClass({
                 <ul role="nav">
                     <li><IndexLink to="/">Home</IndexLink></li>
                     <li><NavLink to="/about">About</NavLink></li>
-                    <li><NavLink to="/servers">Servers</NavLink></li>
+                    <li><NavLink to="/guilds">Guilds</NavLink></li>
                 </ul>
                 {this.props.children}
             </div>

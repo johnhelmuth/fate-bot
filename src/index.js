@@ -54,4 +54,4 @@ fatebot
 		console.log("Fatebot Disconnected!.");
         process.exit(1); //exit node.js with an error
 	})
-	.loginWithToken(discordToken);
+	.login(discordToken);

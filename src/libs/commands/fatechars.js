@@ -12,7 +12,6 @@ var Charsheet = require('../charsheet');
 var dice = require('./dice');
 
 // libraries
-var Discord = require("discord.js");
 var _ = require('lodash');
 var Promise = require('bluebird');
 var path = require('path');
@@ -92,7 +91,7 @@ module.exports = {
  */
 function skill_pyramid(bot, msg, parsed) {
 	Charsheet.setSkillPyramid(true);
-	bot.reply(msg, 'Set Skill Pyramid Output to true.');
+    msg.reply('Set Skill Pyramid Output to true.');
 }
 
 /**
@@ -104,24 +103,24 @@ function skill_pyramid(bot, msg, parsed) {
  */
 function no_skill_pyramid(bot, msg, parsed) {
 	Charsheet.setSkillPyramid(false);
-	bot.reply(msg, 'Set Skill Pyramid Output to false.');
+    msg.reply('Set Skill Pyramid Output to false.');
 }
 
 /**
- * Utility function to get a server_id from a message
+ * Utility function to get a guild_id from a message
  *
  * @param {Message} message
  * @returns {null|String}
  */
-function getServerId(message) {
-	console.log('getServerId() message: ', message);
-	var server_id = null;
-	if (message.channel instanceof Discord.ServerChannel) {
-		console.log('getServerId() message has a ServerChannel.');
-		server_id = message.channel.server.id;
+function getGuildId(message) {
+	console.log('getGuildId() message: ', message);
+	var guild_id = null;
+	if (message.channel.type == 'text') {
+		console.log('getGuildId() message is on a text channel.');
+		guild_id = message.channel.guild.id;
 	}
-	console.log('getServerId() server_id: ', server_id);
-	return server_id;
+	console.log('getGuildId() guild_id: ', guild_id);
+	return guild_id;
 }
 
 /**
@@ -134,15 +133,14 @@ function getServerId(message) {
 function char_cmd(bot, msg, parsed) {
 	var user = msg.author;
 	var user_id = user.id;
-	var server_id = getServerId(msg);
+	var guild_id = getGuildId(msg);
 	console.log('user_id: ', user_id);
-	console.log('server_id: ', server_id);
-	var char = getCharForUser(user_id, server_id);
+	console.log('guild_id: ', guild_id);
+	var char = getCharForUser(user_id, guild_id);
 	console.log('parsed.tokens: ', parsed.tokens);
 	if (parsed.tokens.length) {
 		var subcmd;
-
-		if (msg.mentions.length) {
+		if (msg.mentions.users.size) {
 			parsed.tokens.shift(); // drop the mentioned user
 			subcmd = 'look';
 		}
@@ -215,11 +213,11 @@ function char_cmd(bot, msg, parsed) {
 	} else {
 		char
 			.then(function (char) {
-				console.log('char returned from getCharForUser(' + user_id + ', ' + server_id + '): ', char);
+				console.log('char returned from getCharForUser(' + user_id + ', ' + guild_id + '): ', char);
 				replyWithChar(bot, msg, '', char);
 			})
 			.catch(function (err) {
-				bot.reply(msg, "An error occurred while looking for your character sheet to display: " + err);
+                msg.reply("An error occurred while looking for your character sheet to display: " + err);
 			})
 	}
 }
@@ -236,9 +234,9 @@ function fate_default(bot, msg, parsed) {
 	if (parsed.tokens.length) {
 		var token = parsed.tokens.shift();
 		var possible_skill = token.toLowerCase();
-		var server_id = getServerId(msg);
-		console.log('server_id: ', server_id);
-		getCharForUser(msg.author.id, server_id)
+		var guild_id = getGuildId(msg);
+		console.log('guild_id: ', guild_id);
+		getCharForUser(msg.author.id, guild_id)
 			.then(function (char) {
 				console.log('default command, char: ', char);
 				console.log('char.skills: ', char.skills);
@@ -280,7 +278,7 @@ function fate_default(bot, msg, parsed) {
  * @param {Charsheet} char
  */
 function replyWithChar(bot, tomsg, msg, char) {
-	bot.reply(tomsg, msg + '\n' + char.toString());
+    tomsg.reply(msg + '\n' + char.toString());
 }
 
 /**
@@ -291,25 +289,25 @@ function replyWithChar(bot, tomsg, msg, char) {
  * @param {Error} err
  */
 function replyWithErr(bot, tomsg, err) {
-	bot.reply(tomsg, 'An error occurred: ' + err);
+    tomsg.reply('An error occurred: ' + err);
 }
 
 /**
  * Pull the character for the user / server combination
  *
  * @param {String} user_id
- * @param {String} server_id
+ * @param {String} guild_id
  *
  * @return Promise that resolves to the Charsheet object.
  */
-function getCharForUser(user_id, server_id) {
-	return Charsheet.loadByPlayerAndServer(user_id, server_id)
+function getCharForUser(user_id, guild_id) {
+	return Charsheet.loadByPlayerAndGuild(user_id, guild_id)
 		.then(function (char) {
 			if (_.isEmpty(char)) {
-				console.log('getCharForUser() no character found for user_id ' + user_id + ' server_id ' + server_id);
+				console.log('getCharForUser() no character found for user_id ' + user_id + ' guild_id ' + guild_id);
 				var newchar = new Charsheet();
 				newchar.player_id = user_id;
-				newchar.server_id = server_id;
+				newchar.guild_id = guild_id;
 				console.log('getCharForUser() empty character generated: ', newchar);
 				console.log('getCharForUser() calling newchar.save()');
 				return newchar.save()
@@ -317,10 +315,10 @@ function getCharForUser(user_id, server_id) {
 						return saved_char;
 					})
 					.catch(function (err) {
-						console.log('error: getCharForUser() unable to save new Charsheet for user_id: ', user_id, ' server_id: ', server_id, ' err: ', err);
+						console.log('error: getCharForUser() unable to save new Charsheet for user_id: ', user_id, ' guild_id: ', guild_id, ' err: ', err);
 					});
 			}
-			console.log('getCharForUser(' + user_id + ', ' + server_id + ') returning char: ', char);
+			console.log('getCharForUser(' + user_id + ', ' + guild_id + ') returning char: ', char);
 			return char;
 		});
 }
@@ -333,14 +331,14 @@ function getCharForUser(user_id, server_id) {
  * @param {Object} parsed
  */
 function look(bot, msg, parsed) {
-	console.log('msg.mentions.length: ', msg.mentions.length);
-	console.log('msg.mentions[0]: ', msg.mentions[0]);
-	if (msg.mentions.length) {
-		var look_at = msg.mentions[0];
+	console.log('msg.mentions.users.size: ', msg.mentions.users.size);
+	console.log('msg.mentions.users.first(): ', msg.mentions.users.first());
+	if (msg.mentions.users.size) {
+		var look_at = msg.mentions.users.first();
 		console.log('look_at: ', look_at);
 		var username = look_at.username;
 		var look_at_id = look_at.id;
-		getCharForUser(look_at_id, getServerId(msg))
+		getCharForUser(look_at_id, getGuildId(msg))
 			.then(function (look_at_char) {
 				replyWithChar(bot, msg, "Looked at " + username + "'s character sheet:", look_at_char);
 			}, function (err) {
@@ -360,9 +358,9 @@ function look(bot, msg, parsed) {
  * @param {Object} parsed
  */
 function list_all(bot, msg, parsed) {
-	var server_id = getServerId(msg);
+	var guild_id = getGuildId(msg);
 	return Charsheet.loadBy({
-		'server_id': server_id
+		'guild_id': guild_id
 	})
 		.then(function(chars) {
 			var output = "\nCharacter\tPlayer\tHC\tFP\n";
@@ -372,7 +370,7 @@ function list_all(bot, msg, parsed) {
 					+ char.aspects.HC + "\t"
 					+ char.fate_points + "\n";
 			});
-			bot.reply(msg, output);
+            msg.reply(output);
 		})
 		.catch(function(err) {
 			replyWithErr(bot, msg, err);
@@ -387,14 +385,14 @@ function list_all(bot, msg, parsed) {
  * @param {Object} parsed
  */
 function random_aspect(bot, msg, parsed) {
-	var server_id = getServerId(msg);
+	var guild_id = getGuildId(msg);
 	return Charsheet.loadBy({
-			'server_id': server_id
+			'guild_id': guild_id
 		})
 		.then(function (chars) {
 			var which_char = _.sample(chars);
 			var aspect = _.sample(which_char.aspects);
-			bot.reply(msg, "\n" + which_char.name + ": ***" + aspect + "***\n");
+            msg.reply("\n" + which_char.name + ": ***" + aspect + "***\n");
 		})
 		.catch(function (err) {
 			replyWithErr(bot, msg, err);
@@ -409,9 +407,9 @@ function random_aspect(bot, msg, parsed) {
  * @param {Object} parsed
  */
 function list_aspects(bot, msg, parsed) {
-	var server_id = getServerId(msg);
+	var guild_id = getGuildId(msg);
 	return Charsheet.loadBy({
-			'server_id': server_id
+			'guild_id': guild_id
 		})
 		.then(function (chars) {
 			var output = "\nCharacter\t:\tAspect\n";
@@ -425,7 +423,7 @@ function list_aspects(bot, msg, parsed) {
 					}
 				});
 			});
-			bot.reply(msg, output);
+            msg.reply(output);
 		})
 		.catch(function (err) {
 			replyWithErr(bot, msg, err);
@@ -441,13 +439,13 @@ function list_aspects(bot, msg, parsed) {
  * @param {Object} parsed
  */
 function skill_list(bot, msg, parsed) {
-    var server_id = getServerId(msg);
+    var guild_id = getGuildId(msg);
     var which_skill;
     if (parsed.tokens.length >= 1) {
         which_skill = parsed.tokens.shift();
     }
     return Charsheet.loadBy({
-            'server_id': server_id
+            'guild_id': guild_id
         })
         .then(function (chars) {
             var output;
@@ -464,7 +462,7 @@ function skill_list(bot, msg, parsed) {
                 }
                 output += "***" + Charsheet.displayRating(skill.rating) + "***\n";
             });
-            bot.reply(msg, output);
+            msg.reply(output);
         })
         .catch(function (err) {
             replyWithErr(bot, msg, err);
@@ -528,14 +526,14 @@ function getPeakSkill(skills) {
  * @param {Object} parsed
  */
 function dump(bot, msg, parsed) {
-	var server_id = getServerId(msg);
-	console.log('server_id: ', server_id);
-	getCharForUser(msg.author.id, server_id)
+	var guild_id = getGuildId(msg);
+	console.log('guild_id: ', guild_id);
+	getCharForUser(msg.author.id, guild_id)
 		.then(function (char) {
-			bot.reply(msg, JSON.stringify(char.getData()));
+            msg.reply(JSON.stringify(char.getData()));
 		})
 		.catch(function (err) {
-			bot.reply(msg, err);
+            msg.reply(err);
 		});
 }
 
@@ -560,11 +558,11 @@ function load(bot, msg, parsed) {
  */
 function loadCharFromChat(bot, msg, parsed, user_id) {
 	try {
-		var server_id = getServerId(msg);
+		var guild_id = getGuildId(msg);
 		var chardata = JSON.parse(parsed.rest_of_message());
 		console.log('loadCharFromChat() chardata: ', chardata);
 		if (chardata) {
-			return Charsheet.loadByPlayerAndServer(user_id, server_id)
+			return Charsheet.loadByPlayerAndGuild(user_id, guild_id)
 				.then(function (char) {
 					if (char) {
 						console.log('loadCharFromChat() found char record in database: char: ', char);
@@ -573,7 +571,7 @@ function loadCharFromChat(bot, msg, parsed, user_id) {
 						delete chardata.id;
 						delete chardata._id;
 						delete chardata.player_id;
-						delete chardata.server_id;
+						delete chardata.guild_id;
 						_.forEach(chardata, function (val, key) {
 							if (Charsheet.isMultiple(key)) {
 								_.forEach(val, function (newval, multikey) {
@@ -584,14 +582,14 @@ function loadCharFromChat(bot, msg, parsed, user_id) {
 							}
 						});
 						char.player_id = user_id;
-						char.server_id = server_id;
+						char.guild_id = guild_id;
 						console.log('loadCharFromChat() updated, unsaved char: ', char);
 					} else {
 						// new record
 						console.log('loadCharFromChat() no existing record in database.');
 						delete chardata.id;
 						chardata.player_id = user_id;
-						chardata.server_id = server_id;
+						chardata.guild_id = guild_id;
 						console.log('loadCharFromChat() tweaked chardata: ', chardata);
 						char = new Charsheet(chardata);
 						console.log('loadCharFromChat() created, unsaved char: ', char);
@@ -619,10 +617,10 @@ function loadCharFromChat(bot, msg, parsed, user_id) {
  * @param {Object} parsed
  */
 function load_other(bot, msg, parsed) {
-	console.log('load_other() msg.mentions.length: ', msg.mentions.length);
-	console.log('load_other() msg.mentions[0]: ', msg.mentions[0]);
-	if (msg.mentions.length) {
-		var load_other = msg.mentions[0];
+	console.log('load_other() msg.mentions.users.size: ', msg.mentions.users.size);
+	console.log('load_other() msg.mentions.users.first(): ', msg.mentions.users.first());
+	if (msg.mentions.users.size) {
+		var load_other = msg.mentions.users.first();
 		parsed.tokens.shift(); // drop the mention string from the msg
 		console.log('load_other() parsed.rest_of_message()', parsed.rest_of_message());
 		console.log('load_other() load_other: ', load_other);

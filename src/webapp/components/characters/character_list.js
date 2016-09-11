@@ -11,7 +11,7 @@ import CharacterEntry from './character_entry';
 export default React.createClass({
 
     makeKey(character) {
-        return `${character.server_id}:${character.id}`;
+        return `${character.guild_id}:${character.id}`;
     },
 
     render() {

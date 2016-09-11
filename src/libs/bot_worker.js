@@ -56,19 +56,19 @@ module.exports = function (fatebot) {
 };
 
 function rollSkill(fatebot, msg) {
-    var server = fatebot.servers.get('id', msg.server_id);
-    var user = server.members.get('id', msg.user_id);
-    console.log('rollSkill() server.id: ', server.id);
-    console.log('rollSkill() user.id: ', user.id);
+    var guild = fatebot.guilds.find('id', msg.guild_id);
+    var guild_member = guild.members.find('id', msg.user_id);
+    console.log('rollSkill() guild.id: ', guild.id);
+    console.log('rollSkill() guild_member.id: ', guild_member.id);
     console.log('rollSkill() skill: ', msg.skill);
     console.log('rollSkill() description: ', msg.description);
-    if (server && user) {
-        return Charsheet.loadByPlayerAndServer(user.id, server.id)
+    if (guild && guild_member) {
+        return Charsheet.loadByPlayerAndGuild(guild_member.id, guild.id)
             .then(function (char) {
-                console.log('rollSkill() char.server_id: ', char.server_id);
+                console.log('rollSkill() char.guild_id: ', char.guild_id);
                 console.log('rollSkill() char.player_id: ', char.player_id);
-                if (msg.server_id != char.server_id || msg.user_id != char.player_id) {
-                    console.error('something is wrong, msg and charsheet should match server_id and player_id');
+                if (msg.guild_id != char.guild_id || msg.user_id != char.player_id) {
+                    console.error('something is wrong, msg and charsheet should match guild_id and player_id');
                     return false;
                 }
                 console.log('rollSkill() char: ', char);
@@ -85,8 +85,8 @@ function rollSkill(fatebot, msg) {
                     console.log('rollSkill() skill roll diespec: ', diespec);
                     var roller = new Diceroller(diespec).roll();
                     roller.as_string = roller.toString();
-                    sendMessage(fatebot, server, user,
-                        `${char.name} (${user}) rolled ${skill} ${roller.as_string}`
+                    sendMessage(guild, guild_member,
+                        `${char.name} (@${guild_member.user.username}) rolled ${skill} ${roller.as_string}`
                     );
                     return {roll: roller};
                 }
@@ -96,63 +96,59 @@ function rollSkill(fatebot, msg) {
     return Promise.resolve(false);
 }
 
-function discordServerToObj(server) {
+function discordGuildToObj(guild) {
     return {
-        id: server.id,
-        name: server.name,
-        icon: server.icon,
-        members: server.members.map((member) => {
-            return discordUserToObj(member, server);
+        id: guild.id,
+        name: guild.name,
+        icon: guild.icon,
+        members: guild.members.array().map((member) => {
+            console.log('discordGuildToObj() member: ', member);
+            return discordGuildMemberToObj(member);
         })
     };
 }
 
-function discordUserToObj(user, server) {
-    var user_details = { nick: '' };
-    if (server) {
-        user_details = server.detailsOfUser(user);
-    }
+function discordGuildMemberToObj(member) {
     return {
-        id: user.id,
-        username: user.username,
-        discriminator: user.discriminator,
-        avatar: user.avatar,
-        nick: user_details.nick,
-        status: user.status
+        id: member.user.id,
+        username: member.user.username,
+        discriminator: member.user.discriminator,
+        avatar: member.user.avatar,
+        nick: member.nickname,
+        status: member.user.status
     };
 }
 
-function sendMessage(fatebot, server, user, message) {
-    var channel = getTextChannel(server, 'general');
-    fatebot.sendMessage(channel, message);
-}
-
-function getTextChannel(server, channel_name) {
-    return server.channels.getAll('name', channel_name).get('type', 'text');
+function sendMessage(guild, guild_member, message) {
+    if (guild.defaultChannel.type == 'text') {
+        return guild.defaultChannel.sendMessage(message);
+    }
 }
 
 var message_map = {
-    "servers": {
-        func: function getServers(fatebot) {
-            var servers = _.map(fatebot.servers, function (server) {
-                return discordServerToObj(server);
+    "guilds": {
+        func: function getGuilds(fatebot) {
+            var guilds = _.map(fatebot.guilds.array(), function (guild) {
+                return discordGuildToObj(guild);
             });
-            return Promise.resolve(servers);
+            return Promise.resolve(guilds);
         }
     },
-    "server": {
-        func: function getServer(fatebot, msg) {
-            console.log('getServer() msg: ', msg);
-            var server_id = msg.id;
-            console.log('getServer() server_id: ', server_id);
-            var server = false;
-            var fb_server;
-            if (server_id && (fb_server = fatebot.servers.get("id", server_id))) {
-                console.log('fb_server: ', fb_server);
-                server = discordServerToObj(fb_server);
-                console.log('output server: ', server);
+    "guild": {
+        func: function getGuild(fatebot, msg) {
+            console.log('getGuild() msg: ', msg);
+            var guild_id = msg.id;
+            console.log('getGuild() guild_id: ', guild_id);
+            var guild = false;
+            var fb_guild;
+            console.log('getGuild() fatebot.guilds.find("id", guild_id): ', fatebot.guilds.find("id", guild_id));
+
+            if (guild_id && (fb_guild = fatebot.guilds.find("id", guild_id))) {
+                console.log('fb_guild: ', fb_guild);
+                guild = discordGuildToObj(fb_guild);
+                console.log('output guild: ', guild);
             }
-            return Promise.resolve(server);
+            return Promise.resolve(guild);
         }
     },
     "has_user": {
@@ -170,7 +166,7 @@ var message_map = {
             var user_id = msg.id;
             var user = false;
             if (user_id && (fb_user = fatebot.users.get(user_id))) {
-                user = discordUserToObj(fb_user);
+                user = discordGuildMemberToObj(fb_user);
             }
             return Promise.resolve(user);
         }

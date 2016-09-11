@@ -14,7 +14,7 @@ export default React.createClass({
     },
 
     getCharacter() {
-        axios.get('/api/server/' + this.props.params.server_id + '/character/' + this.props.params.player_id)
+        axios.get('/api/guild/' + this.props.params.guild_id + '/character/' + this.props.params.player_id)
             .then(character_sheet => {
                 if (character_sheet.statusText == "OK") {
                     console.log('character_sheet.data: ', character_sheet.data);
@@ -24,7 +24,7 @@ export default React.createClass({
                 }
             })
             .catch(err => {
-                console.error('/api/servers/:server_id/character/:player_id', err.toString());
+                console.error('/api/guild/:guild_id/character/:player_id', err.toString());
             });
     },
 

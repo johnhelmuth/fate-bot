@@ -23,7 +23,7 @@ Promise.promisifyAll(fs);
 var commands = {
 	"ping": {
 		"func": function (bot, msg, parsed) {
-			bot.reply(msg, "pong");
+            msg.reply("pong");
 			return true;
 		},
 		"describe": "Serve up a very short game of ping-pong.",
@@ -31,7 +31,7 @@ var commands = {
 	},
 	"superping": {
 		"func": function(bot, msg, parsed) {
-			bot.reply(msg, "superpong");
+            msg.reply("superpong");
 		},
 		"no_help": true,
 		"roles": ["@fatebotowner"]
@@ -129,5 +129,5 @@ var unknown_cmd_replies = [
 	"I don't know how to go there."
 ];
 function unknown_response(bot, msg, parsed) {
-	bot.reply(msg, _.sample(unknown_cmd_replies));
+    msg.reply(_.sample(unknown_cmd_replies));
 }

@@ -36,10 +36,6 @@ function dispatch(bot, message) {
 	console.log('dispatch() msg_text: ', msg_text);
 	console.log('dispatch() author (id, username): ', [message.author.id, message.author.username]);
 
-	if (message.channel instanceof Discord.ServerChannel) {
-		console.log('dispatch() message.channel.server: ', message.channel.server);
-	}
-
 	var parsed = parse(msg_text);
 	console.log('dispatch() parsed: ', parsed);
 
@@ -54,12 +50,12 @@ function dispatch(bot, message) {
 		) {
 			cmd_spec = commands.unknown_command;
 		} else {
-			return bot.reply(message, 'What?!');
+			return message.reply('What?!');
 		}
 		if (commandAllowed(message, cmd_spec)) {
 			return cmd_spec.func(bot, message, parsed);
 		} else {
-			bot.reply(message, "You don't have permissions to do that.");
+            message.reply("You don't have permissions to do that.");
 		}
 	}
 	return false;
@@ -129,26 +125,26 @@ function config(cfg) {
 
 /**
  *
- * @param {Server} server
+ * @param {Guild} guild
  * @param {String} role_name
  *
  * @returns {Role}
  */
-function findRole(server, role_name) {
-	return server.roles.get('name', role_name);
+function findRole(guild, role_name) {
+	return guild.roles.get('name', role_name);
 }
 
 /**
  * Does user have rolle on server?
  *
- * @param {Server} server
+ * @param {Guild} guild
  * @param {User} user
  * @param {String} role
  * @returns {boolean}
  */
-function hasRole(server, user, role) {
+function hasRole(guild, user, role) {
 	var role_obj;
-	if (role_obj = findRole(server, role)) {
+	if (role_obj = findRole(guild, role)) {
 		return user.client.memberHasRole(user, role_obj);
 	}
 	return false;
@@ -162,11 +158,11 @@ function hasRole(server, user, role) {
  * @returns {boolean}
  */
 function userAllowed(message, roles) {
-	if (! message.channel instanceof Discord.ServerChannel) {
+	if (! message.channel instanceof Discord.GuildChannel) {
 		return false;
 	}
 	for (var i = 0; i < roles.length; i++) {
-		if (!hasRole(message.channel.server, message.author, roles[i])) {
+		if (!hasRole(message.channel.guild, message.author, roles[i])) {
 			return false;
 		}
 	}
@@ -216,5 +212,5 @@ function help(bot, msg, parsed) {
 		output += "\n";
 	});
 	output += "\n";
-	bot.reply(msg, output);
+	msg.reply(output);
 }

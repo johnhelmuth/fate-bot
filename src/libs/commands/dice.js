@@ -7,7 +7,6 @@
 
 // model classes
 var Diceroller = require('../diceroller');
-var Discord = require("discord.js");
 var BotAvatar = require('../bot_avatar').avatarImages;
 var _ = require('lodash');
 
@@ -24,38 +23,7 @@ module.exports = {
         "func": set_default_dice,
         "describe": "*!set_default_dice <dicespec>* Sets the dicespec to use when there is no dicespec on the *!roll* command."
     },
-    "speak_roll": {
-        /**
-         * Speak the roll results using text-to-speech
-         *
-         * @param {Client} bot
-         * @param {Message} msg
-         * @param {Object} parsed
-         */
-        "func": function (bot, msg, parsed) {
-            speak_roll = true;
-            bot.reply(msg, "I will now say the results of dice rolls.");
-        },
-        "describe": "Have the bot speak the results of the roll."
-    },
-
-    "quiet_roll": {
-        /**
-         * Do not speak the roll results using text-to-speech
-         *
-         * @param {Client} bot
-         * @param {Message} msg
-         * @param {Object} parsed
-         */
-        "func": function (bot, msg, parsed) {
-            speak_roll = false;
-            bot.reply(msg, "I will stop saying the results of dice rolls.");
-        },
-        "describe": "Do not speak the results of the roll."
-    }
 };
-
-var speak_roll = false;
 
 /**
  * Roll some dice.
@@ -81,7 +49,7 @@ function roll(bot, msg, parsed) {
                 throw err;
             });
     } catch (e) {
-        bot.reply(msg, "Error: " + e.message);
+        msg.reply("Error: " + e.message);
     }
 }
 
@@ -119,16 +87,8 @@ function setBotAvatarToRoll(bot, roller) {
  * @returns {Promise}
  */
 function replyWithRoll(bot, msg, roller) {
-    console.log('replyWithRoll() called roller, speak_roll: ', roller, speak_roll);
-    return Promise.all([
-        bot.reply(msg, ' rolled ' + roller.toString()),
-        (function () {
-            if (msg.channel instanceof Discord.ServerChannel && speak_roll) {
-                return bot.sendTTSMessage(msg.channel, 'rolled ' + roller.sumToString());
-            }
-            return Promise.resolve('no_speak_roll');
-        })()
-    ]);
+    console.log('replyWithRoll() called roller: ', roller);
+    return msg.reply(' rolled ' + roller.toString());
 }
 
 /**
@@ -141,7 +101,7 @@ function replyWithRoll(bot, msg, roller) {
 function setAvatar(bot, avatar_name) {
     var avatarData = BotAvatar.get(avatar_name);
     if (avatarData) {
-        return bot.setAvatar(avatarData);
+        return bot.user.setAvatar(avatarData);
     }
     console.log('Couldn\'t find name ', avatar_name);
     return Promise.resolve('no_matching_avatar_image');
@@ -179,11 +139,11 @@ function set_default_dice(bot, msg, parsed) {
     var new_dice_spec = parsed.rest_of_message().trim();
     if (new_dice_spec) {
         if (Diceroller.setDefaultDice(new_dice_spec)) {
-            bot.reply(msg, 'Default Dice set to ' + new_dice_spec);
+            msg.reply('Default Dice set to ' + new_dice_spec);
         } else {
-            bot.reply(msg, 'Default Dice not changed, there was an error parsing the dice specification.');
+            msg.reply('Default Dice not changed, there was an error parsing the dice specification.');
         }
     } else {
-        bot.reply(msg, 'No dice specification found in message.');
+        msg.reply('No dice specification found in message.');
     }
 }

@@ -7,8 +7,8 @@ import { Router, Route, browserHistory, IndexRoute } from 'react-router';
 
 import { render } from 'react-dom';
 import App from './components/app';
-import ServerListContainer from './components/servers/server_list_container';
-import ServerEntryContainer from './components/servers/server_entry_container';
+import GuildListContainer from './components/guilds/guild_list_container';
+import GuildEntryContainer from './components/guilds/guild_entry_container';
 import CharacterSheetContainer from './components/characters/character_sheet_container';
 
 import About from './components/about';
@@ -18,11 +18,11 @@ console.log('Loading webapp App component.');
 render ((
     <Router history={browserHistory}>
         <Route path="/" component={App}>
-            <IndexRoute component={ServerListContainer}/>
+            <IndexRoute component={GuildListContainer}/>
             <Route path="/about" component={About}/>
-            <Route path="/servers" component={ServerListContainer}/>
-            <Route path="/server/:server_id" component={ServerEntryContainer}/>
-            <Route path="/server/:server_id/character/:player_id" component={CharacterSheetContainer}/>
+            <Route path="/guilds" component={GuildListContainer}/>
+            <Route path="/guild/:guild_id" component={GuildEntryContainer}/>
+            <Route path="/guild/:guild_id/character/:player_id" component={CharacterSheetContainer}/>
         </Route>
     </Router>
 ),

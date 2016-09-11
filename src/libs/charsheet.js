@@ -15,14 +15,14 @@ var fate_ladder = require('./fate_ladder');
 /**
  * default data for an empty character sheet.
  *
- * @type {{id: string, name: string, player: string, player_id: string, server_id: string, refresh: number, fate_points: number, aspects: {}, skills: {}, stunts: {}, consequences: {}}}
+ * @type {{id: string, name: string, player: string, player_id: string, guild_id: string, refresh: number, fate_points: number, aspects: {}, skills: {}, stunts: {}, consequences: {}}}
  */
 var empty_data = {
 	id: '',           // database id
 	name: '',         // character name
 	player: '',       // player name
 	player_id: '',    // Discord player user id
-	server_id: '',    // Discord server id
+	guild_id: '',     // Discord guild id
 	refresh: 3,       // Regular character sheet stuff...
 	fate_points: 3,
 	aspects: {},
@@ -31,7 +31,7 @@ var empty_data = {
 	consequences: {}
 };
 
-var cant_set = ['player_id', 'server_id'];
+var cant_set = ['player_id', 'guild_id'];
 
 /**
  * Display the character sheet in a skill pyramid, or an alphabetic list of skills?
@@ -457,20 +457,20 @@ Charsheet.loadBy = function loadBy(params) {
 };
 
 /**
- * Load the character sheet for a given user on a given server
+ * Load the character sheet for a given user on a given guild
  *
  * @param {String} user_id
- * @param {String} server_id
+ * @param {String} guild_id
  * @returns {Promise} that resolves to a Charsheet
  */
-Charsheet.loadByPlayerAndServer = function loadByPlayerAndServer(user_id, server_id) {
+Charsheet.loadByPlayerAndGuild = function loadByPlayerAndGuild(user_id, guild_id) {
 		if (_.isEmpty(user_id)) {
 			return Promise.reject('No id available to load');
 		}
 		return db()
 			.then(function (db) {
 				return db.collection(charsheet_collection)
-					.find({player_id: user_id, server_id: server_id}).limit(1).next()
+					.find({player_id: user_id, guild_id: guild_id}).limit(1).next()
 					.then(createCharsheetFromDb)
 					.finally(function () {
 						db.close();

@@ -26,7 +26,7 @@ export default React.createClass({
     rollClick() {
         console.log('clicked roll button.', this.props.skill, this.props.rating);
         if (this.props.character) {
-            axios.get(`/api/server/${this.props.character.server_id}/character/${this.props.character.player_id}/${this.props.skill}/roll`)
+            axios.get(`/api/guild/${this.props.character.guild_id}/character/${this.props.character.player_id}/${this.props.skill}/roll`)
                 .then(roll_resp => {
                     if (roll_resp.statusText == "OK") {
                         console.log('DiceButton rollClick() roll_resp.data.roll: ', roll_resp.data.roll);
@@ -37,7 +37,7 @@ export default React.createClass({
                     }
                 })
                 .catch(err => {
-                    console.error('/api/servers/:server_id/character/:player_id/:skill/roll', err.toString());
+                    console.error('/api/guild/:guild_id/character/:player_id/:skill/roll', err.toString());
                 });
         }
     },

@@ -65,13 +65,13 @@ function callBot(call_details) {
         });
 }
 
-function getServers() {
-    return callBot({func: "servers"});
+function getGuilds() {
+    return callBot({func: "guilds"});
 }
 
-function getServer(server_id) {
-    console.log('getServer() server_id: ', server_id);
-    return callBot({func: "server", id: server_id});
+function getGuild(guild_id) {
+    console.log('getGuild() guild_id: ', guild_id);
+    return callBot({func: "guild", id: guild_id});
 }
 
 function hasUser(user_id) {
@@ -82,10 +82,10 @@ function getUser(user_id) {
     return callBot({func: "user", id: user_id });
 }
 
-function rollSkill(server_id, user_id, skill, description) {
+function rollSkill(guild_id, user_id, skill, description) {
     return callBot({
         func: "roll_skill",
-        server_id: server_id,
+        guild_id: guild_id,
         user_id: user_id,
         skill: skill,
         description: description
@@ -93,8 +93,8 @@ function rollSkill(server_id, user_id, skill, description) {
 }
 
 module.exports = {
-    getServers: getServers,
-    getServer: getServer,
+    getGuilds: getGuilds,
+    getGuild: getGuild,
     hasUser: hasUser,
     getUser: getUser,
     rollSkill: rollSkill
