@@ -37,17 +37,18 @@ function roll(bot, msg, parsed) {
     console.log('roll() diespec: ', diespec);
     try {
         var roller = new Diceroller(diespec).roll();
-        setBotAvatarToRoll(bot, roller)
-            .then(function () {
-                return replyWithRoll(bot, msg, roller);
-            })
-            .then(function () {
-                return setAvatar(bot, 'default');
-            })
-            .catch(function (err) {
-                console.log('Error setting bot avatar: ', err);
-                throw err;
-            });
+        return replyWithRoll(bot, msg, roller);
+        // setBotAvatarToRoll(bot, roller)
+        //     .then(function () {
+        //         return replyWithRoll(bot, msg, roller);
+        //     })
+        //     .then(function () {
+        //         return setAvatar(bot, 'default');
+        //     })
+        //     .catch(function (err) {
+        //         console.log('Error setting bot avatar: ', err);
+        //         throw err;
+        //     });
     } catch (e) {
         msg.reply("Error: " + e.message);
     }
