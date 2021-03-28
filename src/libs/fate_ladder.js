@@ -5,6 +5,8 @@
  */
 
 module.exports = {
+  "-4": "Horrifying",
+  "-3": "Catastrophic",
 	"-2": "Terrible",
 	"-1": "Poor",
 	 "0": "Mediocre",

@@ -2,8 +2,8 @@
  * Created by jhelmuth on 7/24/16.
  */
 
-var fate_ladder = require('../fate_ladder');
-
+const fate_ladder = require('../fate_ladder');
+const _ = require('lodash');
 
 function lookup(lookup_list, offset, value) {
     value += offset;
@@ -32,7 +32,7 @@ function describeFudgeSum(sum) {
 
 /** either type of dice **/
 function formatSum(dr) {
-    var fmt = describeDiceSum;
+    let fmt = describeDiceSum;
     if (dr.parsed.die_type == 'f') {
         fmt = describeFudgeSum;
     }
@@ -60,7 +60,7 @@ function describeFudgeDiceList(rolls) {
 
 /** either type of dice **/
 function formatRolls(dr) {
-    var fmt = describeDiceList;
+  let fmt = describeDiceList;
     if (dr.parsed.die_type == 'f') {
         fmt = describeFudgeDiceList;
     }
@@ -81,26 +81,42 @@ function formatBonus(bonus) {
 
 /** regular dice **/
 function formatDice(rolls, sum, bonus, description) {
-    return describeDiceList(rolls) + ' ' + formatBonus(bonus) + ' = *' + (describeDiceSum(sum) + description).trim() + '*';
+  const dice_list = describeDiceList(rolls);
+  const bonus_description = formatBonus(bonus);
+  const dice_sum = describeDiceSum(sum).toString();
+  let formatted_roll = `${dice_list} ${bonus_description} = *${dice_sum.trim()}`;
+  if (! _.isEmpty(description.trim())) {
+    formatted_roll += ` ${description.trim()}`;
+  }
+  formatted_roll += '*';
+  return formatted_roll;
 }
 
 /** fudge dice **/
 function formatFudge(rolls, sum, bonus, description) {
     //  rolled [-] [ ] [-] [+]  @+3 = Fair (+2)
-    return describeFudgeDiceList(rolls) + ' ' + formatBonus(bonus) + ' = *' + (describeFudgeSum(sum) + description).trim() + '*';
+  const dice_list = describeFudgeDiceList(rolls);
+  const bonus_description = formatBonus(bonus).toString();
+  const dice_sum = describeFudgeSum(sum).toString();
+  let formatted_roll = `${dice_list} ${bonus_description} = *${dice_sum.trim()}`;
+  if (! _.isEmpty(description.trim())) {
+    formatted_roll += ` ${description.trim()}`;
+  }
+  formatted_roll += '*';
+  return formatted_roll;
 }
 
 /** either type of dice **/
 function format(dr) {
-    var fmt = formatDice;
+  let fmt = formatDice;
     if (dr.parsed.die_type == 'f') {
         fmt = formatFudge;
     }
     return fmt(dr.rolls, dr.sum, dr.parsed.bonus, dr.parsed.description);
 }
 
-var default_fudge_map = ["[-]", "[ ]", "[+]"];
-var fudge_map = default_fudge_map;
+const default_fudge_map = ["[-]", "[ ]", "[+]"];
+let fudge_map = default_fudge_map;
 function setFudgeMap(new_map) {
     console.log('setFudgeMap() new_map: ', new_map);
     if (_.isArray(new_map) && new_map.length == 3) {

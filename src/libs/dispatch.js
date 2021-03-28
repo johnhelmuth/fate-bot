@@ -6,13 +6,15 @@
  * Handles messages from the Discord App and dispatches appropriately to the command function.
  */
 
-var Discord = require("discord.js");
-var _ = require('lodash');
+const Discord = require("discord.js");
+const _ = require('lodash');
 
-var Cmd = require('./commands');
-var commands = Cmd.commands;
+const Cmd = require('./commands');
+const commands = Cmd.commands;
+const isValidCommand = Cmd.isValidCommand;
 
-var cmd_prefix = '!';
+let cmd_prefix = '!';
+let default_command = 'roll';
 
 // Add the help command to the list of commands supported.
 Cmd.addCommand('help', {
@@ -32,16 +34,16 @@ function dispatch(bot, message) {
 		// ignore messages I send out.
 		return false;
 	}
-	var msg_text = message.content;
+	const msg_text = message.content;
 	console.log('dispatch() msg_text: ', msg_text);
 	console.log('dispatch() author (id, username): ', [message.author.id, message.author.username]);
 
-	var parsed = parse(msg_text);
+	const parsed = parse(msg_text);
 	console.log('dispatch() parsed: ', parsed);
 
 	if (parsed.cmd) {
-		var cmd_spec = null;
-		if (commands.hasOwnProperty(parsed.cmd)
+    let cmd_spec = null;
+		if (isValidCommand(parsed.cmd)
 			&& _.isFunction(commands[parsed.cmd].func)
 		) {
 			cmd_spec = commands[parsed.cmd];
@@ -68,7 +70,7 @@ function dispatch(bot, message) {
  * @returns {{text: *, cmd: string, tokens: Array, rest_of_message: parsed.rest_of_message}}
  */
 function parse(msg_text) {
-	var parsed = {
+	const parsed = {
 		text: msg_text,
 		cmd: 'default',
 		tokens: [],
@@ -76,10 +78,17 @@ function parse(msg_text) {
 			return this.tokens.join(' ');
 		}
 	};
-	var tokens = msg_text.split(' ');
+	const tokens = msg_text.split(' ');
 	if (isCommand(tokens[0])) {
+    parsed.cmd = default_command;
 		if (tokens[0].length > 1) {
-			parsed.cmd = tokens.shift().substr(1).toLowerCase(); // drop initial marker
+      let cmd_string = tokens.shift().substr(1).toLowerCase(); // drop initial marker
+      if (isValidCommand(cmd_string)) {
+        parsed.cmd = cmd_string;
+      } else {
+        // Put the token back onto the tokens list.
+        tokens.unshift(cmd_string);
+      }
 		} else {
 			tokens.shift(); // drop the empty ! from the tokens list_all
 		}
@@ -115,7 +124,7 @@ function setCmdPrefix(cmd_pref) {
  * @param {Function} cfg
  */
 function config(cfg) {
-	var cmd_pref = cfg('prefix');
+	const cmd_pref = cfg('prefix');
 	if (cmd_pref) {
 		setCmdPrefix(cmd_pref);
 	}
@@ -143,7 +152,7 @@ function findRole(guild, role_name) {
  * @returns {boolean}
  */
 function hasRole(guild, user, role) {
-	var role_obj;
+  let role_obj;
 	if (role_obj = findRole(guild, role)) {
 		return user.client.memberHasRole(user, role_obj);
 	}
@@ -161,7 +170,7 @@ function userAllowed(message, roles) {
 	if (! message.channel instanceof Discord.GuildChannel) {
 		return false;
 	}
-	for (var i = 0; i < roles.length; i++) {
+	for (let i = 0; i < roles.length; i++) {
 		if (!hasRole(message.channel.guild, message.author, roles[i])) {
 			return false;
 		}
@@ -197,7 +206,7 @@ module.exports = {dispatch: dispatch, setCmdPrefix: setCmdPrefix, config: config
  * @param {Object} parsed
  */
 function help(bot, msg, parsed) {
-	var output = "***Need help?***\n\n";
+  let output = "***Need help?***\n\n";
 	output += "\tThe command prefix is '" + cmd_prefix + "'\n\n";
 	_.forEach(commands, function (cmd_spec, cmd) {
 		if (cmd_spec.hasOwnProperty('no_help') && cmd_spec.no_help) {

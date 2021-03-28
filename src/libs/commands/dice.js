@@ -6,9 +6,8 @@
  */
 
 // model classes
-var Diceroller = require('../diceroller');
-var BotAvatar = require('../bot_avatar').avatarImages;
-var _ = require('lodash');
+const Diceroller = require('../diceroller');
+const _ = require('lodash');
 
 // list of commands for the bot to use
 // key=what the user types, value=object with "func", "roles", and "describe" keys,
@@ -33,23 +32,15 @@ module.exports = {
  * @param {Object} parsed
  */
 function roll(bot, msg, parsed) {
-    var diespec = parsed.rest_of_message();
+    console.log('roll() parsed: ', parsed);
+    const diespec = parsed.rest_of_message();
     console.log('roll() diespec: ', diespec);
     try {
-        var roller = new Diceroller(diespec).roll();
+        const roller = new Diceroller(diespec).roll();
+        console.log('roll() roller: ', roller);
         return replyWithRoll(bot, msg, roller);
-        // setBotAvatarToRoll(bot, roller)
-        //     .then(function () {
-        //         return replyWithRoll(bot, msg, roller);
-        //     })
-        //     .then(function () {
-        //         return setAvatar(bot, 'default');
-        //     })
-        //     .catch(function (err) {
-        //         console.log('Error setting bot avatar: ', err);
-        //         throw err;
-        //     });
     } catch (e) {
+        console.log('roll() Error: ', e);
         msg.reply("Error: " + e.message);
     }
 }
@@ -65,7 +56,7 @@ function setBotAvatarToRoll(bot, roller) {
     console.log('setBotAvatar() roller: ', roller);
     console.log('setBotAvatar() BotAvatar: ', BotAvatar);
     if (!_.isNull(BotAvatar)) {
-        var rolls_name;
+        let rolls_name;
         if (roller.parsed.die_type == 'f') {
             rolls_name = fudgeDiceRollToName(roller);
             console.log('setBotAvatar() rolls, rolls_name: ', roller.rolls, rolls_name);
@@ -100,7 +91,7 @@ function replyWithRoll(bot, msg, roller) {
  * @returns {Promise}
  */
 function setAvatar(bot, avatar_name) {
-    var avatarData = BotAvatar.get(avatar_name);
+    const avatarData = BotAvatar.get(avatar_name);
     if (avatarData) {
         return bot.user.setAvatar(avatarData);
     }
@@ -108,7 +99,7 @@ function setAvatar(bot, avatar_name) {
     return Promise.resolve('no_matching_avatar_image');
 }
 
-var fudgeDiceMap = {
+const fudgeDiceMap = {
     '-1': '-',
     '0': '0',
     '1': '+'
@@ -137,7 +128,7 @@ function fudgeDiceRollToName(roller) {
  * @param {Object} parsed
  */
 function set_default_dice(bot, msg, parsed) {
-    var new_dice_spec = parsed.rest_of_message().trim();
+    const new_dice_spec = parsed.rest_of_message().trim();
     if (new_dice_spec) {
         if (Diceroller.setDefaultDice(new_dice_spec)) {
             msg.reply('Default Dice set to ' + new_dice_spec);

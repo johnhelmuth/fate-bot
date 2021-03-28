@@ -10,17 +10,15 @@
  *
  */
 
-var _ = require('lodash');
-var Promise = require('bluebird');
-var path = require('path');
-var fs = require('fs');
-Promise.promisifyAll(fs);
+const _ = require('lodash');
+const path = require('path');
+const fs = require('fs').promises;
 
 // list a base set of commands for the bot to use
 // key=what the user types, value=object with "func", "roles", and "describe" keys,
 // used for the function to run, the Discord "roles" the user must have to run the command,
 // and what text to display when the user types !help
-var commands = {
+const commands = {
 	"ping": {
 		"func": function (bot, msg, parsed) {
             msg.reply("pong");
@@ -43,10 +41,10 @@ var commands = {
 	}
 };
 
-var commands_added_count = 0;
+let commands_added_count = 0;
 function addCommand(cmd, funcspec) {
 	if (_.isString(cmd)) {
-		var cmd_spec = {
+		const cmd_spec = {
 			func: null,
 			roles: []
 		};
@@ -80,8 +78,12 @@ function addCommand(cmd, funcspec) {
 	}
 }
 
-var plugindir = __dirname;
-fs.readdirAsync(plugindir)
+function isValidCommand(cmd_name) {
+  return commands.hasOwnProperty(cmd_name);
+}
+
+const plugindir = __dirname;
+fs.readdir(plugindir)
 	.then(function (files) {
 		console.log('reading plugin files: ', files);
 		return files
@@ -90,7 +92,7 @@ fs.readdirAsync(plugindir)
 			})
 			.map(function (filename) {
 				console.log('reading plugin file ' + filename);
-				var cmds = require(path.join(plugindir, filename));
+				const cmds = require(path.join(plugindir, filename));
 				console.log('plugin file ' + filename + ': ', cmds);
 				_.forEach(cmds, function(func_spec, cmd) {
 					console.log('calling addCommand() with [cmd, func_spec]: ', [cmd, func_spec]);
@@ -114,11 +116,12 @@ fs.readdirAsync(plugindir)
 
 module.exports = {
 	addCommand: addCommand,
+  isValidCommand: isValidCommand,
 	commands: commands
 };
 
 
-var unknown_cmd_replies = [
+const unknown_cmd_replies = [
 	"What!?",
 	"I don't even know what that means.",
 	"What you talking about?",

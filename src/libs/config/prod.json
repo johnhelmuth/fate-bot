@@ -1,14 +1,23 @@
 {
+  "bot": {
+    "comment": [
+      "Set these from information on https://discordapp.com/developers/applications/me page for your application.",
+      "bot.token can be overwritten by the DISCORD_BOT_TOKEN environment variable.",
+      "bot.client_id can be overwritten by the DISCORD_CLIENT_ID environment variable.",
+      "bot.client_secret can be overwritten by the DISCORD_CLIENT_SECRET environment variable.",
+      "bot.bot_permissions can be overwritten by the DISCORD_BOT_PERMISSIONS environment variable, but probably shouldn't be."
+    ],
+    "token": "YOURBOTTOKENHERE",
+    "client_id": "YOURCLIENTIDHERE",
+    "client_secret": "YOURCLIENTSECRETHERE",
+    "bot_permissions": 2048
+  },
   "dispatch": {
+    "comment": "What character determines a given message is a command to the bot",
     "prefix": "!"
   },
   "diceroller": {
+    "comment": "Default dice specification, used when no specification is given.",
     "default": "4df"
-  },
-  "charsheet": {
-    "pyramid": true
-  },
-  "dice_images": {
-    "path": "images/dice/4df"
   }
 }

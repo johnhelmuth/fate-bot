@@ -13,14 +13,14 @@
  *   bot.token => DISCORD_BOT_TOKEN
  */
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 /**
  * The configuration, start with prod.json
  *
  * @type {Object}
  */
-var cfg =
+let cfg =
 	loadConfig('prod.json', {});
 
 /**
@@ -52,12 +52,12 @@ module.exports = function config(key) {
  *
  * @param {string} filename
  * @param {Object} cfg base configuration
- * @returns {Object} - the cfg var merged with the object in the file.
+ * @returns {Object} - the cfg const merged with the object in the file.
  */
 function loadConfig(filename, cfg) {
 	try {
 		filename = './' + filename;
-		var load_cfg = require(filename);
+		const load_cfg = require(filename);
 		_.merge(cfg, load_cfg);
 	} catch (e) {}
 	return cfg;
@@ -71,32 +71,7 @@ function loadConfig(filename, cfg) {
  * @return {Object}
  */
 function validateConfig(cfg) {
-    cfg = validateMongo(cfg);
     cfg = validateDiscord(cfg);
-    cfg = validateApp(cfg);
-    cfg = validateAMQP(cfg);
-    return cfg;
-}
-
-function validateMongo(cfg) {
-    if (process.env.hasOwnProperty('MONGODB_URI') && process.env.MONGODB_URI) {
-        (cfg.mongo || (cfg.mongo = {})).url = process.env.MONGODB_URI;
-    }
-    if (! cfg.hasOwnProperty('mongo') || ! cfg.mongo.hasOwnProperty('url')) {
-        console.log('overwriteMongo() cfg, env: ', cfg, process.env);
-        throw new Error("No mongodb url configured.");
-    }
-    return cfg;
-}
-
-function validateApp(cfg) {
-    if (process.env.hasOwnProperty('APP_DOMAIN') && process.env.APP_DOMAIN) {
-        cfg.app_domain = process.env.APP_DOMAIN;
-    }
-    if (!cfg.hasOwnProperty('app_domain')) {
-        console.log('validateApp() cfg, env: ', cfg, process.env);
-        throw new Error("No app_domain name configured.");
-    }
     return cfg;
 }
 
@@ -110,6 +85,10 @@ function validateDiscord(cfg) {
     if (process.env.hasOwnProperty('DISCORD_BOT_TOKEN') && process.env.DISCORD_BOT_TOKEN) {
         (cfg.bot || (cfg.bot = {})).token = process.env.DISCORD_BOT_TOKEN;
     }
+    if (process.env.hasOwnProperty('DISCORD_BOT_PERMISSIONS') && process.env.DISCORD_BOT_PERMISSIONS) {
+        (cfg.bot || (cfg.bot = {})).bot_permissions = process.env.DISCORD_BOT_PERMISSIONS;
+    }
+
     if (!cfg.hasOwnProperty('bot')) {
         throw new Error("No bot configuration available.");
     }
@@ -123,13 +102,9 @@ function validateDiscord(cfg) {
     if (!cfg.bot.hasOwnProperty('token')) {
         throw new Error("No bot token configured.");
     }
-    console.log('validateDiscord() final cfg: ', cfg);
-    return cfg;
-}
-
-function validateAMQP(cfg) {
-    if (process.env.hasOwnProperty('CLOUDAMQP_URL') && process.env.CLOUDAMQP_URL) {
-        (cfg.amqp || (cfg.amqp = {})).url = process.env.CLOUDAMQP_URL;
+    if (!cfg.bot.hasOwnProperty('bot_permissions')) {
+      throw new Error("No bot permissions configured.");
     }
+    console.log('validateDiscord() final cfg: ', cfg);
     return cfg;
 }

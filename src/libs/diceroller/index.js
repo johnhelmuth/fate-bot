@@ -4,13 +4,12 @@
  * Diceroller - parses a dicespec and rolls dice and formats the result
  */
 
-var Chance = require('chance');
-var fate_ladder = require('../fate_ladder');
-var chance = new Chance();
-var DiceFormatter = require('./formatter');
+const Chance = require('chance');
+const chance = new Chance();
+const DiceFormatter = require('./formatter');
 
-var default_spec = '2d6';
-var default_parsed = {
+let default_spec = '2d6';
+let default_parsed = {
 	num_dice: 2,
 	die_type: 6,
 	bonus: 0,
@@ -37,11 +36,11 @@ function Diceroller(dicespec) {
 }
 
 function valid_num_dice(matches) {
-	var num_dice = false;
+	let num_dice = false;
 	if (!matches[1]) {
 		num_dice = default_parsed.num_dice;
 	} else {
-		var parsed_num_dice = parseInt(matches[1], 10);
+		const parsed_num_dice = parseInt(matches[1], 10);
 		if (parsed_num_dice == parsed_num_dice
 			&& parsed_num_dice > 0
 		) {
@@ -52,11 +51,11 @@ function valid_num_dice(matches) {
 }
 
 function valid_die_type(matches) {
-	var die_type = false;
+	let die_type = false;
 	if (!matches[2]) {
 		die_type = default_parsed.die_type;
 	} else {
-		var parsed_die_type = parseInt(matches[2], 10);
+		const parsed_die_type = parseInt(matches[2], 10);
 		if (parsed_die_type != parsed_die_type) {
 			if (matches[2].toLowerCase() == 'f') {
 				die_type = matches[2].toLowerCase();
@@ -69,13 +68,13 @@ function valid_die_type(matches) {
 }
 
 function valid_bonus(matches) {
-	var bonus = false;
+	let bonus = false;
 	if (matches.length < 3
 		|| ! matches[3]
 	) {
 		bonus = 0;
 	} else {
-		var val = parseInt(matches[3], 10);
+		const val = parseInt(matches[3], 10);
 		if (val == val) {
 			bonus = val;
 		}
@@ -84,13 +83,13 @@ function valid_bonus(matches) {
 }
 
 function parseSpec(spec) {
-	var parsed_dice;
-	var matches = spec.match(/^(?:(?:([0-9]*)d([0-9]+|f))*([+-][0-9]+)*)*(.*)$/i);
+  let parsed_dice;
+	const matches = spec.match(/^(?:(?:\s*([0-9]*)d([0-9]+|f)){0,1}\s*([+-][0-9]+){0,1}){0,1}(.*)$/i);
 	if (matches) {
-		var num_dice = valid_num_dice(matches);
-		var die_type = valid_die_type(matches);
-		var bonus = valid_bonus(matches);
-		var description = matches.length > 4 ? matches[4] : '';
+		const num_dice = valid_num_dice(matches);
+		const die_type = valid_die_type(matches);
+		const bonus = valid_bonus(matches);
+		const description = matches.length > 4 ? matches[4].trim() : '';
 		if (num_dice && die_type && bonus !== false) {
 			parsed_dice = {
 				num_dice: num_dice,
@@ -108,7 +107,7 @@ function parseSpec(spec) {
 }
 
 function roll_a_die(die_type) {
-	var range = null;
+  let range = null;
 	if (die_type == 'f') {
 		range = {min: -1, max: 1};
 	} else {
@@ -119,10 +118,10 @@ function roll_a_die(die_type) {
 
 Diceroller.prototype = {
 	roll: function roll() {
-		var dicerolls = [];
-		var sum = 0;
-		for (var d = 0; d<this.parsed.num_dice; d++) {
-			var dieroll = roll_a_die(this.parsed.die_type);
+		const dicerolls = [];
+    let sum = 0;
+		for (let d = 0; d<this.parsed.num_dice; d++) {
+			const dieroll = roll_a_die(this.parsed.die_type);
 			sum += dieroll;
 			dicerolls.push(dieroll);
 		}
@@ -145,7 +144,7 @@ Diceroller.prototype = {
 };
 
 Diceroller.setDefaultDice = function(new_spec) {
-	var new_parsed;
+  let new_parsed;
 	if (new_parsed = parseSpec(new_spec)) {
 		default_spec = new_spec;
 		default_parsed = new_parsed;
@@ -159,7 +158,7 @@ Diceroller.getDefaultDice = function() {
 };
 
 Diceroller.config = function(cfg) {
-	var config = cfg('diceroller');
+	const config = cfg('diceroller');
 	if (config.default) {
 		Diceroller.setDefaultDice(config.default);
 	}
